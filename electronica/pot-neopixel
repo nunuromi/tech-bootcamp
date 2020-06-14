@@ -1,0 +1,113 @@
+//FastLED_AnalogueInput.ino
+//Fuente Original https://gist.github.com/11545fd0241ab60b567d.git
+//Traducido al Españoñ por Nuria Robles at Fab Lab León
+
+/*
+ Vamos a usar un potenciómetro para controlar el color, el brillo y la velicodad de una tira de neopixels.
+ Seguiremos el cableado que se indixa en http://arduino.cc/en/Tutorial/AnalogInput
+ Se puede conectar el pin móvil del potenciómetro a cualquier pin analógico, más abajo se configurarán los pines.
+
+ Se puede conectar el pin móvil del potenciómetro a cualquier pin analógico, más abajo se configurarán las entradas.
+ Serán necesarios 3 potenciómetros de 10k.
+ */
+
+
+#include <FastLED.h>
+
+
+#define LED_PIN 10              // en este caso 10 es el PIN digital donde está conectada la tira de Neopixels
+#define NUM_LEDS 50             // Número de neopixeles en la tira . En este caso 50
+#define COLOR_ORDER RGB
+#define LED_TYPE WS2811        // Tipo de Neopixeles que estamos usando, en este caso WS2811s, La librería FastLED soporta más tipos.
+
+/* 
+ Ahora vamos a configurar el brillo deseado.
+ Los valores admitidos estarán entre 0 - 255
+ 0 será totalmente apagado y 255 totalmente encendido.
+ Si queremos la mitad de la potencia, elegiremos 128
+ */
+
+#define MAX_BRIGHTNESS 164      // Este sería el brillo máximo
+#define MIN_BRIGHTNESS 32       // Este sería el mínimo
+
+const int brightnessInPin = A0;  // A0 es la entrada analógica a la que está conectado el potenciómetro de control de Brillo.
+const int speedInPin = A1;       // A1 es la entrada analógica a la que está conectado el potenciómetro de control de velocidad.
+const int colourInPin = A2;      // A2 es la entrada analógica a la que está conectado el potenciómetro de control de color.
+
+struct CRGB leds[NUM_LEDS];
+
+void setup() {
+  delay(3000); // Esto por seguridad.
+
+  LEDS.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.setBrightness(MAX_BRIGHTNESS);
+}
+
+void loop() {
+  // para leer el valor analógico del brillo:
+  //int brightValue = analogRead(brightnessInPin);            
+  // para mapearlo al rango de brillo del FastLED:map (valor que recibo, desde Mínimo, desde Máximo, a Mínimo, a Máximo)
+  int mappedValue = map(analogRead(brightnessInPin), 0, 1023, 0, 255);
+
+  /* 
+   En este momento, el brillo podría estar totalmente apagado (mappedValue == 0)
+   o totalmente encendido (mappedValue == 255).
+   Si estamos alimentando con una batería o en una habitación totalmente a oscuras, no vamos a necesitar el brillo a la máxima potencia.
+   Si estamos a la lux del día tampoco necesitaremos que los pixels estén totalmente apagados. Podemos ajustar los valores aquí.
+   Funcionaría de esta forma:
+   
+   obtendremos el valor mapeado (mappedValue) : si mappedValue está entre  MIN_BRIGHTNESS y MAX_BRIGHTNESS.
+   obtendremos MIN_BRIGHTNESS: si mappedValue es menor que el que hemos definido como MIN_BRIGHTNESS.
+   obtendremos MAX_BRIGHTNESS: si mappedValue es mayor que el que hemos definido como  MAX_BRIGHTNESS
+   
+   de esta manera limitados el valor del brillo.
+   
+   */
+
+  //int outputValue = constrain(mappedValue, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
+
+  // Ahora establecemos el valor del brillo:
+  FastLED.setBrightness(constrain(mappedValue, MIN_BRIGHTNESS, MAX_BRIGHTNESS));
+
+  // ahora leemos el valor de la velocidad:          
+  // y lo mapeamos para un valor usado en el delay delay();
+  int delayValue = map(analogRead(speedInPin), 0, 1023, 0, 50);  
+
+  int mappedHue;
+  // leemos el valor del brillo:
+  //int hueValue = analogRead(colourInPin);            
+  // y lo mapeamos al rango del brillo del FastLED:
+
+
+
+  // First slide the led in one direction
+  for(int i = 0; i < NUM_LEDS; i++) {
+    mappedHue = map(analogRead(colourInPin), 0, 1023, 0, 255);
+    // Set the i'th led to the chosen colour
+    leds[i] = CHSV(mappedHue, 255, 255);
+    // Show the leds
+    FastLED.show();
+    // now that we've shown the leds, reset the i'th led to black
+    leds[i] = CRGB::Black;
+    // Wait a little bit before we loop around and do it again
+    delay(delayValue);  
+  }
+
+
+  // Now go in the other direction.  
+  for(int i = NUM_LEDS-1; i >= 0; i--) {
+    mappedHue = map(analogRead(colourInPin), 0, 1023, 0, 255);
+    // Set the i'th led to the chosen colour 
+    leds[i] = CHSV(mappedHue, 255, 255);
+    // Show the leds
+    FastLED.show();
+    // now that we've shown the leds, reset the i'th led to black
+    leds[i] = CRGB::Black;
+    // Wait a little bit before we loop around and do it again
+    delay(delayValue);  
+  }
+
+
+
+}
+
