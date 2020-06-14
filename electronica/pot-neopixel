@@ -12,6 +12,7 @@
  */
 
 
+// Abrimos la librería FastLED. Si no la tenemos la tendremos que instalar
 #include <FastLED.h>
 
 
