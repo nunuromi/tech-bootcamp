@@ -1,6 +1,6 @@
 //FastLED_AnalogueInput.ino
 //Fuente Original https://gist.github.com/11545fd0241ab60b567d.git
-//Traducido al Españoñ por Nuria Robles at Fab Lab León
+//Traducido al Español por Nuria Robles at Fab Lab León
 
 /*
  Vamos a usar un potenciómetro para controlar el color, el brillo y la velicodad de una tira de neopixels.
